@@ -161,13 +161,13 @@ fn test_write_f64() {
 #[test]
 fn test_encode_nonfinite_float_yields_null() {
     let v = to_value(::std::f64::NAN).unwrap();
-    assert!(v.is_null());
+    assert!(v.is_f64());
 
     let v = to_value(::std::f64::INFINITY).unwrap();
     assert!(v.is_null());
 
     let v = to_value(::std::f32::NAN).unwrap();
-    assert!(v.is_null());
+    assert!(v.is_f64());
 
     let v = to_value(::std::f32::INFINITY).unwrap();
     assert!(v.is_null());
