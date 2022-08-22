@@ -432,6 +432,7 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         }
     }
 
+    //PATRICK
     fn parse_number(&mut self, positive: bool, significand: u64) -> Result<ParserNumber> {
         Ok(match tri!(self.peek_or_null()) {
             b'.' => ParserNumber::F64(tri!(self.parse_decimal(positive, significand, 0))),
