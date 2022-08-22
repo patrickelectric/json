@@ -31,7 +31,7 @@ macro_rules! test_stream {
 
 #[test]
 fn test_json_stream_newlines() {
-    let data = "{\"x\":39} {\"x\":40}{\"x\":41}\n{\"x\":42}";
+    let data = "{\"x\":39} {\"x\":40}{\"x\":41}\n{\"x\":42}{\"x\":NaN}";
 
     test_stream!(data, Value, |stream| {
         assert_eq!(stream.next().unwrap().unwrap()["x"], 39);
@@ -44,6 +44,10 @@ fn test_json_stream_newlines() {
         assert_eq!(stream.byte_offset(), 25);
 
         assert_eq!(stream.next().unwrap().unwrap()["x"], 42);
+        assert_eq!(stream.byte_offset(), 34);
+        dbg!(stream.next().unwrap().unwrap());
+        println!("potato");
+        assert_eq!(stream.next().unwrap().unwrap()["x"], std::f64::NAN);
         assert_eq!(stream.byte_offset(), 34);
 
         assert!(stream.next().is_none());
