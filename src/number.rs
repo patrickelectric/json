@@ -258,7 +258,9 @@ impl Number {
     /// #
     /// assert!(Number::from_f64(256.0).is_some());
     ///
-    /// assert!(Number::from_f64(f64::NAN).is_none());
+    /// assert!(Number::from_f64(f64::NAN).is_some());
+    ///
+    /// assert!(Number::from_f64(f64::INFINITY).is_none());
     /// ```
     #[inline]
     pub fn from_f64(f: f64) -> Option<Number> {
@@ -274,6 +276,10 @@ impl Number {
                 }
             };
             Some(Number { n })
+        } else if f.is_nan() {
+            Some(Number {
+                n: N::Float(f64::NAN),
+            })
         } else {
             None
         }
