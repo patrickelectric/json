@@ -24,6 +24,7 @@ fn value_bool() {
 
 #[test]
 fn value_number() {
+    assert_eq!(format!("{:?}", json!(std::f64::NAN)), "Number(NaN)");
     assert_eq!(format!("{:?}", json!(1)), "Number(1)");
     assert_eq!(format!("{:?}", json!(-1)), "Number(-1)");
     assert_eq!(format!("{:?}", json!(1.0)), "Number(1.0)");
