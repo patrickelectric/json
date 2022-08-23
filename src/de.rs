@@ -263,10 +263,22 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         let err = match self.peek_or_null().unwrap_or(b'\x00') {
             b'n' => {
                 self.eat_char();
-                if let Err(err) = self.parse_ident(b"ull") {
-                    return err;
+                match self.next_char_or_null().unwrap_or(b'\x00') {
+                    //PATRICK
+                    b'u' => {
+                        if let Err(err) = self.parse_ident(b"ll") {
+                            return err;
+                        }
+                        de::Error::invalid_type(Unexpected::Unit, exp)
+                    }
+                    b'a' => {
+                        if let Err(err) = self.parse_ident(b"n") {
+                            return err;
+                        }
+                        de::Error::invalid_type(Unexpected::Float(std::f64::NAN), exp)
+                    }
+                    _ => self.peek_error(ErrorCode::ExpectedSomeValue),
                 }
-                de::Error::invalid_type(Unexpected::Unit, exp)
             }
             b't' => {
                 self.eat_char();
@@ -321,6 +333,12 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         };
 
         let value = match peek {
+            b'n' => {
+                self.eat_char();
+                tri!(self.parse_ident(b"an"));
+                dbg!("NANANANANANANA");
+                tri!(Ok(ParserNumber::F64(std::f64::NAN))).visit(visitor) // PATRICK
+            }
             b'-' => {
                 self.eat_char();
                 tri!(self.parse_integer(false)).visit(visitor)
@@ -1036,8 +1054,18 @@ impl<'de, R: Read<'de>> Deserializer<R> {
             let frame = match peek {
                 b'n' => {
                     self.eat_char();
-                    tri!(self.parse_ident(b"ull"));
-                    None
+                    match self.next_char_or_null() {
+                        //PATRICK
+                        Ok(b'u') => {
+                            tri!(self.parse_ident(b"ll"));
+                            None
+                        }
+                        Ok(b'a') => {
+                            tri!(self.parse_ident(b"n"));
+                            None
+                        }
+                        _ => return Err(self.peek_error(ErrorCode::EofWhileParsingValue)),
+                    }
                 }
                 b't' => {
                     self.eat_char();
@@ -1322,8 +1350,19 @@ impl<'de, 'a, R: Read<'de>> de::Deserializer<'de> for &'a mut Deserializer<R> {
         let value = match peek {
             b'n' => {
                 self.eat_char();
-                tri!(self.parse_ident(b"ull"));
-                visitor.visit_unit()
+                match tri!(self.next_char_or_null()) {
+                    //PATRICK
+                    b'u' => {
+                        tri!(self.parse_ident(b"ll"));
+                        visitor.visit_unit()
+                    }
+                    b'a' => {
+                        dbg!("deserialize_any!!!!");
+                        tri!(self.parse_ident(b"n"));
+                        visitor.visit_f64(std::f64::NAN)
+                    }
+                    _ => Err(self.peek_error(ErrorCode::ExpectedSomeValue)),
+                }
             }
             b't' => {
                 self.eat_char();
