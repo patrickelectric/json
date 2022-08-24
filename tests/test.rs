@@ -623,6 +623,7 @@ where
         // number may be a valid number.
         if !json_value.is_number() {
             for (i, _) in s.trim_end().char_indices() {
+                dbg!(from_str::<Value>(&s[..i]));
                 assert!(from_str::<Value>(&s[..i]).unwrap_err().is_eof());
                 assert!(from_str::<IgnoredAny>(&s[..i]).unwrap_err().is_eof());
             }
@@ -657,6 +658,7 @@ where
     T: Debug + PartialEq + de::DeserializeOwned,
 {
     for &(s, err) in errors {
+        dbg!(s, err);
         test_parse_err!(from_str::<T>(s) => err);
         test_parse_err!(from_slice::<T>(s.as_bytes()) => err);
     }

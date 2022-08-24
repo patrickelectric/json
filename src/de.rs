@@ -335,9 +335,26 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         let value = match peek {
             b'n' => {
                 self.eat_char();
-                tri!(self.parse_ident(b"an"));
-                dbg!("NANANANANANANA");
-                tri!(Ok(ParserNumber::F64(std::f64::NAN))).visit(visitor) // PATRICK
+
+                let peek1 = match tri!(self.parse_whitespace()) {
+                    Some(b) => b,
+                    None => {
+                        return Err(self.peek_error(ErrorCode::EofWhileParsingValue));
+                    }
+                };
+
+                let peek2 = match tri!(self.parse_whitespace()) {
+                    Some(b) => b,
+                    None => {
+                        return Err(self.peek_error(ErrorCode::EofWhileParsingValue));
+                    }
+                };
+
+                if peek1 == b'a' && peek2 == b'n' {
+                    return tri!(Ok(ParserNumber::F64(std::f64::NAN))).visit(visitor);
+                    // PATRICK
+                }
+                Err(self.peek_invalid_type(&visitor))
             }
             b'-' => {
                 self.eat_char();
